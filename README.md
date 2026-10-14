@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SupplyIQ - Supply Chain Analytics & Risk Intelligence Platform
 
 SupplyIQ is a Streamlit supply-chain intelligence frontend. Its primary workflows are a regional order explorer, supplier/inventory intelligence, and a fuel-consumption records viewer. Prediction, scenario simulation, and AI pages display an unavailable state until their backend services are connected.
@@ -94,3 +95,6 @@ SupplyIQ/
    ```bash
    streamlit run app.py
    ```
+=======
+
+>>>>>>> origin/Paras
