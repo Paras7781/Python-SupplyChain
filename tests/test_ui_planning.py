@@ -1,6 +1,6 @@
 import unittest
 
-from src.ui_planning import calculate_fuel_estimate
+from ml.fuel_weather.feature_engineering import calculate_fuel_estimate
 
 
 class FuelEstimateTests(unittest.TestCase):

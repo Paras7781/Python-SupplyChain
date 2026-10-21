@@ -1,0 +1,1 @@
+"""Vector-store setup and embedding utilities for semantic document search."""

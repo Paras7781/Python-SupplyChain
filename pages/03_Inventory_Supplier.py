@@ -3,9 +3,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from dashboard.components.cards import render_disclaimer, render_empty_state, render_metric_card
-from dashboard.components.navigation import render_page_header, render_sidebar_header
-from src.data_loader import load_dataset
+from ui.cards import render_disclaimer, render_empty_state, render_metric_card, render_smart_alert
+from ui.navigation import render_page_header, render_sidebar_header
+from shared.data_loader import load_dataset
 
 
 st.set_page_config(page_title="Supplier & Inventory Intelligence - SupplyIQ", page_icon="📦", layout="wide")
@@ -48,7 +48,8 @@ def load_retail_records() -> pd.DataFrame:
         frame["Date"] = pd.to_datetime(frame["Date"], errors="coerce")
     return frame
 
-
+# Presentation helpers for UI tables:
+# These functions format columns and categories specifically for this page's interactive displays.
 def classify_stock_status(current_stock, reorder_level):
     """Classify stock from source values without treating missing values as healthy."""
     if pd.isna(current_stock) or pd.isna(reorder_level):
@@ -159,6 +160,7 @@ with supplier_filter:
     supplier_query = st.text_input("Find a supplier by ID", placeholder="Type a source supplier ID")
 
 if product_query.strip():
+    # Search all available product identifiers before building the short selection list.
     query = product_query.strip()
     product_match = pd.Series(False, index=base.index)
     for field in ("Product_ID", "SKU", "Brand"):
@@ -175,6 +177,7 @@ selected_product = st.selectbox(
     help="After typing a search above, choose an actual product ID or SKU from the matching source records. The list is capped at 500 values.",
 )
 if selected_product != "All matching products":
+    # Product ID and SKU are both accepted because either may identify the chosen record.
     base = base[
         base.get("Product_ID", pd.Series("", index=base.index)).astype(str).eq(selected_product)
         | base.get("SKU", pd.Series("", index=base.index)).astype(str).eq(selected_product)
@@ -213,6 +216,7 @@ else:
 
 filtered = filtered.copy()
 if inventory_check_supported:
+    # Keep records without enough stock data in the Unknown category, not a healthy one.
     filtered["Stock status"] = filtered.apply(
         lambda row: classify_stock_status(row.get("Current_Stock"), row.get("Reorder_Level")),
         axis=1,
@@ -243,8 +247,29 @@ with metrics[3]:
     mean_lead = filtered["Lead_Time_Days"].mean() if "Lead_Time_Days" in filtered else None
     render_metric_card("Mean recorded lead time", f"{mean_lead:.1f} days" if pd.notna(mean_lead) else "Unavailable")
 
+if critical_count > 0:
+    render_smart_alert(
+        title="Critical Stock Depletion Detected",
+        trigger=f"{critical_count:,} filtered SKU records with zero or negative stock on hand ({critical_pct:.1f}% of filtered rows)",
+        threshold="Stock level <= 0 units (Critical stockout point)",
+        why_it_matters="Immediate fulfillment failure for incoming customer orders; risk of contract penalties and lost revenue.",
+        next_step="Initiate expedited emergency replenishment purchase orders for critical SKUs.",
+        severity="error",
+        is_model_prediction=False,
+    )
+elif reorder_count > 0:
+    render_smart_alert(
+        title="Inventory Reorder Point Breached",
+        trigger=f"{reorder_count:,} SKU records have dipped to or below their configured reorder point ({reorder_pct:.1f}% of filtered rows)",
+        threshold="Business rule: Current_Stock <= Reorder_Level",
+        why_it_matters="Safety buffer is actively engaged; unexpected demand surges or supplier lead-time delays will cause stockouts.",
+        next_step="Trigger standard replenishment purchase orders matching the suggested quantities below.",
+        severity="warning",
+        is_model_prediction=False,
+    )
+
 st.subheader("Stock status mix")
-st.dataframe(status_summary, hide_index=True, use_container_width=True, column_config={
+st.dataframe(status_summary, hide_index=True, width="stretch", column_config={
     "Share (%)": st.column_config.NumberColumn(format="%.1f%%"),
 })
 
@@ -265,7 +290,7 @@ with left:
             hover_name="Product_Category",
         )
         chart.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={"color": "#D9E4F0"})
-        st.plotly_chart(chart, use_container_width=True)
+        st.plotly_chart(chart, width="stretch")
         if "Date" in filtered and filtered["Date"].notna().any() and demand_field in filtered:
             monthly_demand = filtered[["Date", demand_field]].copy()
             monthly_demand["Date"] = pd.to_datetime(monthly_demand["Date"], errors="coerce")
@@ -282,7 +307,7 @@ with left:
                         labels={"Month": "Month", demand_field: f"Average {demand_label}"},
                     )
                     monthly_chart.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={"color": "#D9E4F0"})
-                    st.plotly_chart(monthly_chart, use_container_width=True)
+                    st.plotly_chart(monthly_chart, width="stretch")
     else:
         render_empty_state("Demand chart unavailable: Product_Category and Units_Sold or Daily_Demand are required.")
 
@@ -298,6 +323,7 @@ with right:
         )
         summary = summary.dropna(subset=[col for col in summary.columns if col.startswith("Average_")], how="all")
         if {"Average_supplier_rating", "Average_lead_time_days", "Average_on_time_delivery_rate"}.issubset(summary.columns):
+            # Normalize rating and lead-time measures before applying the documented weights.
             max_rating = summary["Average_supplier_rating"].max()
             max_lead = summary["Average_lead_time_days"].max()
             rating_score = (summary["Average_supplier_rating"] / max_rating * 100) if pd.notna(max_rating) and max_rating > 0 else 0
@@ -310,7 +336,7 @@ with right:
             st.dataframe(
                 summary[["Supplier_ID", "Source_records", "Average_supplier_rating", "Average_lead_time_days", "Average_on_time_delivery_rate", "Weighted supplier score"]].head(100),
                 hide_index=True,
-                use_container_width=True,
+                width="stretch",
                 column_config={
                     "Average_supplier_rating": st.column_config.NumberColumn(format="%.2f"),
                     "Average_lead_time_days": st.column_config.NumberColumn(format="%.1f"),
@@ -324,21 +350,25 @@ with right:
             )
         else:
             summary = summary.sort_values("Source_records", ascending=False, kind="stable")
-            st.dataframe(summary.head(100), hide_index=True, use_container_width=True)
+            st.dataframe(summary.head(100), hide_index=True, width="stretch")
             st.caption("Descriptive means from the currently filtered records, not a validated ranking or prediction.")
     else:
         render_empty_state("Supplier comparison requires Supplier_ID and at least one recorded supplier measure.")
 
-st.subheader("Inventory recommendation")
+st.subheader("Inventory recommendation (Rule-Based)")
 recommendation = build_inventory_recommendations(filtered)
 if recommendation.empty:
     st.info("Insufficient data: current stock, daily demand, lead time, and safety stock are required to estimate a reorder quantity.")
 else:
     recommendation = recommendation[["Current_Stock", "Daily_Demand", "Lead_Time_Days", "Safety_Stock", "Target stock", "Suggested reorder quantity"]].copy()
-    st.dataframe(recommendation.head(50), hide_index=True, use_container_width=True)
+    st.dataframe(recommendation.head(50), hide_index=True, width="stretch")
     st.caption(
-        "Simplified recommendation: Target stock = (Daily demand × Lead time) + Safety stock; Suggested reorder quantity = max(0, Target stock − Current stock). "
-        "This can need adjustment for open purchase orders, review periods, demand variability, and other operational factors."
+        "**Formula & Assumptions:** `Target stock = (Recorded Daily Demand × Lead Time) + Safety Stock`; "
+        "`Suggested reorder quantity = max(0, Target stock − Current Stock)`. "
+        "• **Source Data:** Current Stock, Daily Demand, Lead Time, and Safety Stock originate directly from historical records. "
+        "• **Rule-Based Calculation:** Target stock and Suggested reorder quantity are deterministic arithmetic outputs, not ML predictions. "
+        "• **Operational Caveats:** Assumes steady daily demand with zero variance, zero in-transit purchase orders, and fixed lead times. "
+        "Do not use for automated real-world purchase commitments without supplier MOQ, batch constraints, and verified sales velocity."
     )
 
 st.subheader("Estimated inventory coverage")
@@ -356,7 +386,7 @@ else:
             "Days of inventory remaining": coverage_values,
         }).dropna(),
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
     )
     st.caption("This is an estimate based on recorded daily demand, not a guaranteed stockout date.")
 
@@ -370,5 +400,5 @@ if inventory_check_supported:
         ).clip(lower=0)
 else:
     displayed = filtered
-st.dataframe(displayed.head(200), hide_index=True, use_container_width=True)
+st.dataframe(displayed.head(200), hide_index=True, width="stretch")
 st.caption("Showing up to 200 matching original rows. Product and supplier values are IDs because the source does not include human-readable product or supplier names.")

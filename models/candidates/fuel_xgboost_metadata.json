@@ -1,0 +1,21 @@
+{
+  "model_name": "XGBRegressor (Candidate)",
+  "task": "regression",
+  "target": "fuel_consumed_liters",
+  "validation_method": "TimeSeriesSplit",
+  "fold_count": 5,
+  "sample_size": 30000,
+  "xgboost_version": "3.2.0",
+  "scikit_learn_version": "1.9.1",
+  "trained_timestamp": "2026-10-19T06:11:26.525618+00:00",
+  "mae": 2.536045577363968,
+  "mae_std": 0.08748439034538164,
+  "rmse": 5.721713620578389,
+  "rmse_std": 0.558275300605242,
+  "r2_score": 0.9461615227758513,
+  "r2_score_std": 0.01186803434766208,
+  "is_candidate": true,
+  "is_synthetic": true,
+  "artifact_path": "fuel_model_xgboost.joblib",
+  "notes": "Trained on synthetic demonstration records (added_data_status = 'synthetic_demo_values')."
+}

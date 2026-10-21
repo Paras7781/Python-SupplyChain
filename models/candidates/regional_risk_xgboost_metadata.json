@@ -1,0 +1,23 @@
+{
+  "model_name": "XGBClassifier (Candidate)",
+  "task": "binary_classification",
+  "target": "Late_delivery_risk",
+  "validation_method": "TimeSeriesSplit",
+  "fold_count": 5,
+  "sample_size": 30000,
+  "xgboost_version": "3.2.0",
+  "scikit_learn_version": "1.9.1",
+  "trained_timestamp": "2026-10-19T06:11:24.053400+00:00",
+  "model_accuracy": 0.7112,
+  "model_accuracy_std": 0.008203413923483319,
+  "precision": 0.8228517240908438,
+  "precision_std": 0.030428761665994862,
+  "recall": 0.6059370970967092,
+  "recall_std": 0.018975219294179377,
+  "f1_score": 0.6971610075837213,
+  "f1_score_std": 0.004860153953727748,
+  "roc_auc": 0.756471923614685,
+  "roc_auc_std": 0.006958065302919042,
+  "is_candidate": true,
+  "artifact_path": "regional_risk_model_xgboost.joblib"
+}

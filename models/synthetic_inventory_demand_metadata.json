@@ -1,0 +1,173 @@
+{
+  "model_name": "HistGradientBoostingRegressor",
+  "task": "regression",
+  "target": "Daily_Demand",
+  "validation_method": "GroupKFold",
+  "validation_score_type": "cross_validation_estimate",
+  "fold_count": 5,
+  "splitter_configuration": {
+    "n_splits": 5,
+    "shuffle": false,
+    "group_column": "Supplier_ID"
+  },
+  "scoring_metrics": [
+    "mae",
+    "rmse",
+    "r2"
+  ],
+  "cv_metrics": {
+    "mae": {
+      "fold_scores": [
+        24.0846,
+        24.1284,
+        24.6854,
+        23.8937,
+        24.5021
+      ],
+      "mean": 24.2588,
+      "std": 0.3248
+    },
+    "rmse": {
+      "fold_scores": [
+        30.2394,
+        30.404,
+        30.9285,
+        30.0099,
+        30.7656
+      ],
+      "mean": 30.4695,
+      "std": 0.3764
+    },
+    "r2": {
+      "fold_scores": [
+        0.9293,
+        0.9293,
+        0.9277,
+        0.9301,
+        0.9287
+      ],
+      "mean": 0.929,
+      "std": 0.0009
+    }
+  },
+  "dummy_baselines": {
+    "mean": {
+      "mae": {
+        "fold_scores": [
+          92.6233,
+          92.9216,
+          92.9324,
+          92.1011,
+          93.6257
+        ],
+        "mean": 92.8408,
+        "std": 0.5535
+      },
+      "rmse": {
+        "fold_scores": [
+          113.7718,
+          114.3975,
+          115.0301,
+          113.5329,
+          115.202
+        ],
+        "mean": 114.3868,
+        "std": 0.7392
+      },
+      "r2": {
+        "fold_scores": [
+          -0.0002,
+          -0.0003,
+          -0.0001,
+          -0.0003,
+          -0.0
+        ],
+        "mean": -0.0002,
+        "std": 0.0001
+      }
+    },
+    "median": {
+      "mae": {
+        "fold_scores": [
+          90.9897,
+          91.855,
+          91.5687,
+          90.444,
+          92.5412
+        ],
+        "mean": 91.4797,
+        "std": 0.8044
+      },
+      "rmse": {
+        "fold_scores": [
+          115.2248,
+          116.4594,
+          116.9952,
+          114.915,
+          117.0583
+        ],
+        "mean": 116.1306,
+        "std": 1.0018
+      },
+      "r2": {
+        "fold_scores": [
+          -0.0259,
+          -0.0366,
+          -0.0346,
+          -0.0248,
+          -0.0325
+        ],
+        "mean": -0.0309,
+        "std": 0.0053
+      }
+    }
+  },
+  "trained_timestamp": "2026-10-20T03:13:16.908309+00:00",
+  "scikit_learn_version": "1.9.1",
+  "train_samples": 30000,
+  "features": [
+    "Product_Category",
+    "Warehouse_Location",
+    "Transportation_Mode",
+    "Lead_Time_Days",
+    "Safety_Stock",
+    "Reorder_Level",
+    "Supplier_Rating",
+    "Storage_Capacity",
+    "Seasonal_Demand_Index"
+  ],
+  "feature_definitions": {
+    "categorical": [
+      "Product_Category",
+      "Warehouse_Location",
+      "Transportation_Mode"
+    ],
+    "numeric": [
+      "Lead_Time_Days",
+      "Safety_Stock",
+      "Reorder_Level",
+      "Supplier_Rating",
+      "Storage_Capacity",
+      "Seasonal_Demand_Index"
+    ]
+  },
+  "mae": 24.2588,
+  "mae_std": 0.3248,
+  "rmse": 30.4695,
+  "rmse_std": 0.3764,
+  "r2_score": 0.929,
+  "r2_score_std": 0.0009,
+  "baseline_mean_mae": 92.8408,
+  "baseline_median_mae": 91.4797,
+  "is_baseline_heuristic": false,
+  "is_synthetic_demonstration": true,
+  "data_provenance": "synthetic_demonstration_data",
+  "synthetic_generator": {
+    "source_csv": "data/raw/Retail_Supply_Chain_Analytics_Dataset.csv",
+    "formula": "Daily_Demand = round(category_base * warehouse_factor * seasonal_factor + noise)",
+    "random_seed": 42,
+    "noise_std_dev": 30.0
+  },
+  "model_performance_summary": "HistGradientBoostingRegressor achieved CV R2 = 0.9290 (MAE: 24.26, RMSE: 30.47) on synthetic data, outperforming Dummy Mean (MAE: 92.84, R2: -0.0002) and Dummy Median (MAE: 91.48, R2: -0.0309). IMPORTANT: This performance reflects the mathematical generator formula and demonstrates that the ML pipeline can learn systematic demand patterns when features carry predictive signal. It is NOT proof of real-world demand forecasting.",
+  "limitations": "Model trained strictly on synthetic demonstration values. Daily demand values are generated from Product_Category, Warehouse_Location, and Seasonal_Demand_Index. Real-world demand will have complex unobserved factors, non-linearities, and temporal regime changes not captured by this formula."
+}

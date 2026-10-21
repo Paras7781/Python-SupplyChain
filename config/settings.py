@@ -3,6 +3,7 @@ SupplyIQ Configuration Settings.
 Provides central relative paths, app configuration settings, and dataset definitions.
 """
 from pathlib import Path
+import os
 
 # Base Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,6 +11,10 @@ DATA_DIR = BASE_DIR / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 MODELS_DIR = BASE_DIR / "models"
+
+# Ensure runtime directories exist
+PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Actual Raw Dataset Paths
 DATASETS = {

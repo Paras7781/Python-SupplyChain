@@ -20,6 +20,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 class NumberedCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Save each page until the total is known for the "Page X of Y" footer.
         self._saved_page_states = []
 
     def showPage(self):

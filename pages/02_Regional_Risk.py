@@ -4,9 +4,9 @@ import plotly.express as px
 import streamlit as st
 import numpy as np
 
-from dashboard.components.cards import render_disclaimer, render_empty_state, render_metric_card
-from dashboard.components.navigation import render_page_header, render_sidebar_header
-from src.data_loader import load_dataset
+from ui.cards import render_disclaimer, render_empty_state, render_metric_card
+from ui.navigation import render_page_header, render_sidebar_header
+from shared.data_loader import load_dataset
 
 
 DELAY_SEVERITY_THRESHOLDS = {
@@ -104,6 +104,7 @@ def load_order_records() -> pd.DataFrame:
         orders["Source late-risk flag"] = pd.Series(pd.NA, index=orders.index, dtype="boolean")
     orders["Late delivery"] = status.str.contains("late", regex=False, na=pd.NA).astype("boolean")
     if "Shipping gap (days)" in orders:
+        # Translate valid day gaps into readable bands; missing or invalid gaps stay unknown.
         def classify_delay_severity(gap_value, thresholds=None):
             if pd.isna(gap_value):
                 return "Unknown"
@@ -153,15 +154,18 @@ def build_monthly_delivery_summary(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def reset_child_location():
+    # Changing a region invalidates both narrower location selections.
     st.session_state["order_state"] = "All states / provinces"
     st.session_state["order_city"] = "All cities"
 
 
 def reset_city():
+    # Changing the state clears any city selected under the previous state.
     st.session_state["order_city"] = "All cities"
 
 
 def back_one_level():
+    # Clear the deepest selected location first to move up one drill-down level.
     if st.session_state.get("order_city", "All cities") != "All cities":
         st.session_state["order_city"] = "All cities"
     elif st.session_state.get("order_state", "All states / provinces") != "All states / provinces":
@@ -229,7 +233,7 @@ with back_col:
                   and selected_region == "All regions"),
         on_click=back_one_level,
         help="Clear the most specific selected location level.",
-        use_container_width=True,
+        width="stretch",
     )
 
 crumbs = ["All regions"]
@@ -372,7 +376,7 @@ else:
         legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "left", "x": 0},
         margin={"l": 8, "r": 8, "t": 48, "b": 8},
     )
-    st.plotly_chart(monthly_chart, use_container_width=True)
+    st.plotly_chart(monthly_chart, width="stretch")
 
 st.subheader("Regional comparison")
 comparison = working.copy()
@@ -414,7 +418,7 @@ if not comparison.empty:
         margin={"l": 8, "r": 8, "t": 48, "b": 8},
         legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "left", "x": 0},
     )
-    st.plotly_chart(chart, use_container_width=True)
+    st.plotly_chart(chart, width="stretch")
 else:
     render_empty_state("No orders match the current filters.")
 
@@ -448,7 +452,7 @@ if location_field in working and not working.empty:
     st.dataframe(
         ranked[[location_field, "Orders", "Late delivery rate (%)", "Source late-risk rate (%)"]].head(25),
         hide_index=True,
-        use_container_width=True,
+        width="stretch",
         column_config={
             "Late delivery rate (%)": st.column_config.NumberColumn(format="%.1f%%"),
             "Source late-risk rate (%)": st.column_config.NumberColumn(format="%.1f%%"),
@@ -469,7 +473,7 @@ visible_fields = [field for field in visible_fields if field in working]
 if working.empty:
     render_empty_state("No order records match the selected location and filters.")
 else:
-    st.dataframe(working[visible_fields].head(500), hide_index=True, use_container_width=True)
+    st.dataframe(working[visible_fields].head(500), hide_index=True, width="stretch")
     if len(working) > 500:
         st.caption(f"Showing the first 500 of {len(working):,} matching orders; CSV export includes all matches.")
     st.download_button(
@@ -477,7 +481,7 @@ else:
         working[visible_fields].to_csv(index=False).encode("utf-8"),
         file_name="SupplyIQ_filtered_orders.csv",
         mime="text/csv",
-        use_container_width=False,
+        width="content",
     )
     st.subheader("Individual order")
     order_ids = sorted(working["Order Id"].dropna().astype(str).unique().tolist())
@@ -488,7 +492,7 @@ else:
         help="Options contain only Order Id values present in the current filtered source records.",
     )
     detail = working[working["Order Id"].astype(str) == chosen_order][visible_fields].head(1)
-    st.dataframe(detail, hide_index=True, use_container_width=True)
+    st.dataframe(detail, hide_index=True, width="stretch")
     if "Source late-risk flag" in detail and pd.notna(detail["Source late-risk flag"].iloc[0]):
         flag = bool(detail["Source late-risk flag"].iloc[0])
         st.caption(

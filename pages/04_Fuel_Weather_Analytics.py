@@ -5,10 +5,10 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from dashboard.components.cards import render_disclaimer, render_empty_state, render_metric_card
-from dashboard.components.navigation import render_page_header, render_sidebar_header
-from src.data_loader import load_dataset
-from src.ui_planning import calculate_fuel_estimate
+from ui.cards import render_disclaimer, render_empty_state, render_metric_card, render_smart_alert
+from ui.navigation import render_page_header, render_sidebar_header
+from shared.data_loader import load_dataset
+from ml.fuel_weather.feature_engineering import calculate_fuel_estimate
 
 
 st.set_page_config(page_title="Fuel Consumption - SupplyIQ", page_icon="⛽", layout="wide")
@@ -115,6 +115,7 @@ if filtered.empty:
 
 filtered = filtered.copy()
 if {"fuel_cost_per_trip", "trip_distance_km"}.issubset(filtered.columns):
+    # Cost per kilometre is shown only when distance is positive and both inputs are valid.
     valid_cost_km = (
         filtered["fuel_cost_per_trip"].notna()
         & filtered["trip_distance_km"].notna()
@@ -139,6 +140,16 @@ with metrics[3]:
     cost_per_km_mean = filtered["fuel_cost_per_km"].mean() if "fuel_cost_per_km" in filtered else None
     render_metric_card("Mean fuel cost / km", f"{cost_per_km_mean:.2f}" if pd.notna(cost_per_km_mean) else "Unavailable")
 
+render_smart_alert(
+    title="Synthetic Demonstration Fleet Telemetry Notice",
+    trigger="Source field 'added_data_status' explicitly tagged 'synthetic_demo_values'",
+    threshold="Validation requirement: real-world fleet routing requires IoT telematics calibration",
+    why_it_matters="Trip consumption rates, weather responses, and regression curves demonstrate system decision logic but do not represent validated live fleet telemetry.",
+    next_step="Use this module for vehicle-class efficiency comparisons and scenario stress tests rather than operational vehicle dispatch.",
+    severity="info",
+    is_model_prediction=False,
+)
+
 left, right = st.columns(2)
 with left:
     st.subheader("Recorded fuel consumption")
@@ -161,7 +172,7 @@ with left:
                 font={"color": "#D9E4F0"},
                 showlegend=False,
             )
-            st.plotly_chart(chart, use_container_width=True)
+            st.plotly_chart(chart, width="stretch")
         else:
             render_empty_state("Fuel consumption values are missing in the selected records.")
     else:
@@ -191,7 +202,7 @@ with right:
                 plot_bgcolor="rgba(0,0,0,0)",
                 font={"color": "#D9E4F0"},
             )
-            st.plotly_chart(chart, use_container_width=True)
+            st.plotly_chart(chart, width="stretch")
         else:
             render_empty_state("Distance and efficiency values are missing in the selected records.")
     else:
@@ -207,7 +218,7 @@ if "fuel_cost_per_km" in filtered:
         st.dataframe(
             filtered[["trip_id", "vehicle_type", "fuel_cost_per_trip", "trip_distance_km", "fuel_cost_per_km"]].dropna(subset=["fuel_cost_per_km"]).head(200),
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             column_config={
                 "fuel_cost_per_trip": st.column_config.NumberColumn(format="%.2f"),
                 "trip_distance_km": st.column_config.NumberColumn(format="%.1f"),
@@ -244,6 +255,7 @@ else:
 st.subheader("Fuel estimate from a recorded trip")
 required = {"trip_distance_km", "fuel_efficiency_km_per_liter"}
 if required.issubset(filtered.columns):
+    # Exclude invalid and infinite values before offering trips for arithmetic estimates.
     estimate_records = filtered.dropna(subset=list(required))
     estimate_records = estimate_records[
         estimate_records["trip_distance_km"].gt(0)
@@ -320,8 +332,8 @@ if {"vehicle_type", "fuel_efficiency_km_per_liter"}.issubset(filtered.columns):
             font={"color": "#D9E4F0"},
             legend={"title": "Vehicle type"},
         )
-        st.plotly_chart(chart, use_container_width=True)
-        st.dataframe(vehicle_summary, hide_index=True, use_container_width=True)
+        st.plotly_chart(chart, width="stretch")
+        st.dataframe(vehicle_summary, hide_index=True, width="stretch")
     else:
         render_empty_state("No valid vehicle efficiency observations remain after filtering.")
 else:
@@ -335,7 +347,7 @@ display_fields = [
 ]
 visible_fields = [field for field in display_fields if field in filtered.columns]
 if visible_fields:
-    st.dataframe(filtered[visible_fields].head(200), hide_index=True, use_container_width=True)
+    st.dataframe(filtered[visible_fields].head(200), hide_index=True, width="stretch")
     st.caption("Showing up to 200 filtered rows from the source CSV. No origin, destination, route alternatives, or travel times are present in this interface.")
 else:
     render_empty_state("No recognized source fields are available to display.")

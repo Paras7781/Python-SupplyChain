@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from src.data_validation import validate_dataframe
+from shared.data_validation import validate_dataframe
 
 
 class DataValidationTests(unittest.TestCase):

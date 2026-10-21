@@ -1,0 +1,1 @@
+"""Backend configuration, including service settings and environment options."""

@@ -1,0 +1,21 @@
+{
+  "model_name": "XGBRegressor (Candidate)",
+  "task": "regression",
+  "target": "Daily_Demand",
+  "validation_method": "GroupKFold by Supplier",
+  "fold_count": 5,
+  "sample_size": 30000,
+  "xgboost_version": "3.2.0",
+  "scikit_learn_version": "1.9.1",
+  "trained_timestamp": "2026-10-19T06:11:25.483756+00:00",
+  "baseline_median_demand": 249.0,
+  "mae": 125.83597717285156,
+  "mae_std": 0.5618117093263385,
+  "rmse": 145.61196899414062,
+  "rmse_std": 0.44808234843031436,
+  "r2_score": -0.01212327480316162,
+  "r2_score_std": 0.0033579184631067635,
+  "is_candidate": true,
+  "artifact_path": "inventory_demand_model_xgboost.joblib",
+  "notes": "XGBoost does not outperform the training median baseline because Daily_Demand is independent discrete uniform random noise."
+}

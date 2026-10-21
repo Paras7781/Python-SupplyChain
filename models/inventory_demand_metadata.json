@@ -1,0 +1,138 @@
+{
+  "model_name": "HistGradientBoostingRegressor",
+  "task": "regression",
+  "target": "Daily_Demand",
+  "validation_method": "GroupKFold",
+  "validation_score_type": "cross_validation_estimate",
+  "fold_count": 5,
+  "splitter_configuration": {
+    "n_splits": 5,
+    "shuffle": false,
+    "group_column": "Supplier_ID"
+  },
+  "scoring_metrics": [
+    "mae",
+    "rmse",
+    "r2"
+  ],
+  "cv_metrics": {
+    "mae": {
+      "fold_scores": [
+        125.7173,
+        125.0515,
+        125.5057,
+        124.6593,
+        126.2793
+      ],
+      "mean": 125.4426,
+      "std": 0.6217
+    },
+    "rmse": {
+      "fold_scores": [
+        144.9616,
+        144.481,
+        145.0355,
+        144.5174,
+        145.6057
+      ],
+      "mean": 144.9202,
+      "std": 0.4583
+    },
+    "r2": {
+      "fold_scores": [
+        -0.0021,
+        -0.0,
+        -0.0057,
+        -0.0026,
+        -0.0022
+      ],
+      "mean": -0.0025,
+      "std": 0.002
+    }
+  },
+  "fold_group_overlap_counts": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "grouping_assessment": {
+    "primary_group_column": "Supplier_ID",
+    "other_entity_fold_overlap_counts": {
+      "Product_ID": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "Warehouse_ID": [
+        499,
+        499,
+        499,
+        499,
+        499
+      ]
+    }
+  },
+  "trained_timestamp": "2026-10-19T05:41:47.506304+00:00",
+  "scikit_learn_version": "1.9.1",
+  "train_samples": 30000,
+  "excluded_target_rows": {
+    "missing": 0,
+    "non_numeric": 0,
+    "non_finite": 0,
+    "below_zero": 0
+  },
+  "features": [
+    "Product_Category",
+    "Warehouse_Location",
+    "Transportation_Mode",
+    "Lead_Time_Days",
+    "Safety_Stock",
+    "Reorder_Level",
+    "Supplier_Rating",
+    "Storage_Capacity",
+    "Seasonal_Demand_Index"
+  ],
+  "feature_definitions": {
+    "categorical": [
+      "Product_Category",
+      "Warehouse_Location",
+      "Transportation_Mode"
+    ],
+    "numeric": [
+      "Lead_Time_Days",
+      "Safety_Stock",
+      "Reorder_Level",
+      "Supplier_Rating",
+      "Storage_Capacity",
+      "Seasonal_Demand_Index"
+    ]
+  },
+  "baseline_mae": 125.3528,
+  "baseline_mae_std": 0.6149,
+  "baseline_median_demand": 249.0,
+  "baseline_mean_demand": 249.9524,
+  "is_baseline_heuristic": true,
+  "model_performance_summary": "Cross-validation indicates R\u00b2 \u2248 -0.0025. The trained model does not outperform a naive baseline (median: 249.0 units/day, mean: 250.0 units/day). Daily demand is uncorrelated with the available supplier/warehouse features. Demand outputs serve as an illustrative baseline heuristic.",
+  "mae": 125.4426,
+  "mae_std": 0.6217,
+  "rmse": 144.9202,
+  "rmse_std": 0.4583,
+  "r2_score": -0.0025,
+  "r2_score_std": 0.002,
+  "training_configuration": {
+    "max_sample_size": 30000,
+    "sampling_random_seed": 42,
+    "estimator": {
+      "max_iter": 50,
+      "max_depth": 6,
+      "random_state": 42
+    },
+    "final_fit": "All eligible rows after cross-validation."
+  },
+  "data_provenance": "observed_retail_supply_chain_dataset",
+  "limitations": "Validation holds out Supplier_ID and does not estimate temporal drift. Product IDs are unique. Warehouse IDs recur across supplier folds but are not model features; validation therefore does not estimate generalization to completely unseen warehouses. The source supplier-warehouse entity graph is connected, so isolating both entities would not permit multiple useful folds. The model achieves R\u00b2 \u2248 0 and does not beat baseline guessing."
+}

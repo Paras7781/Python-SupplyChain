@@ -1,0 +1,1 @@
+"""FastAPI application entry point and HTTP route definitions."""

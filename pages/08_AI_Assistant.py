@@ -1,8 +1,8 @@
 """Unavailable state for the unimplemented AI and retrieval backend."""
 import streamlit as st
 
-from dashboard.components.navigation import render_page_header, render_sidebar_header
-
+from ui.cards import render_disclaimer, render_empty_state, render_metric_card
+from ui.navigation import render_page_header, render_sidebar_header
 st.set_page_config(page_title="AI Assistant - SupplyIQ", page_icon="🤖", layout="wide")
 render_sidebar_header("assistant")
 render_page_header(

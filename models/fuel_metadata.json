@@ -1,0 +1,121 @@
+{
+  "model_name": "HistGradientBoostingRegressor",
+  "task": "regression",
+  "target": "fuel_consumed_liters",
+  "validation_method": "TimeSeriesSplit",
+  "validation_score_type": "cross_validation_estimate",
+  "fold_count": 5,
+  "splitter_configuration": {
+    "n_splits": 5,
+    "shuffle": false,
+    "timestamp_column": "timestamp",
+    "random_seed": null
+  },
+  "scoring_metrics": [
+    "mae",
+    "rmse",
+    "r2"
+  ],
+  "cv_metrics": {
+    "mae": {
+      "fold_scores": [
+        2.7204,
+        2.501,
+        2.4892,
+        2.5064,
+        2.4889
+      ],
+      "mean": 2.5412,
+      "std": 0.1005
+    },
+    "rmse": {
+      "fold_scores": [
+        6.7439,
+        5.9869,
+        5.5476,
+        4.7469,
+        5.0068
+      ],
+      "mean": 5.6064,
+      "std": 0.797
+    },
+    "r2": {
+      "fold_scores": [
+        0.9213,
+        0.9408,
+        0.9543,
+        0.9637,
+        0.9589
+      ],
+      "mean": 0.9478,
+      "std": 0.0171
+    }
+  },
+  "provenance": "synthetic_demonstration_data",
+  "is_synthetic": true,
+  "trained_timestamp": "2026-10-19T05:27:04.421069+00:00",
+  "scikit_learn_version": "1.9.1",
+  "train_samples": 30000,
+  "excluded_target_rows": {
+    "missing": 0,
+    "non_numeric": 0,
+    "non_finite": 0,
+    "not_strictly_positive": 0
+  },
+  "features": [
+    "vehicle_type",
+    "fuel_type",
+    "road_type",
+    "weather_condition",
+    "trip_distance_km",
+    "load_weight_kg",
+    "temperature_c",
+    "wind_speed_kmh",
+    "rainfall_mm"
+  ],
+  "feature_definitions": {
+    "categorical": [
+      "vehicle_type",
+      "fuel_type",
+      "road_type",
+      "weather_condition"
+    ],
+    "numeric": [
+      "trip_distance_km",
+      "load_weight_kg",
+      "temperature_c",
+      "wind_speed_kmh",
+      "rainfall_mm"
+    ]
+  },
+  "leakage_exclusions": [
+    "fuel_efficiency_km_per_liter",
+    "fuel_consumption_rate",
+    "fuel_cost_per_trip",
+    "fuel_price_per_liter",
+    "timestamp",
+    "trip_id",
+    "vehicle_id"
+  ],
+  "baseline_mae": 15.9061,
+  "baseline_mae_std": 0.246,
+  "mae": 2.5412,
+  "mae_std": 0.1005,
+  "rmse": 5.6064,
+  "rmse_std": 0.797,
+  "r2_score": 0.9478,
+  "r2_score_std": 0.0171,
+  "training_configuration": {
+    "max_sample_size": 30000,
+    "sampling_random_seed": 42,
+    "estimator": {
+      "max_iter": 50,
+      "max_depth": 6,
+      "random_state": 42
+    },
+    "final_fit": "All eligible rows after cross-validation."
+  },
+  "data_provenance": "synthetic_demonstration_data",
+  "synthetic_record_count": 30000,
+  "limitations": "Every source row is synthetic demonstration data, not observed fleet operations. Chronological validation uses the recorded timestamps; vehicles repeat across time periods, and temporal autocorrelation may remain. Scores are validation estimates, not an untouched final-test score."
+}
